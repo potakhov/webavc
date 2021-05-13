@@ -1,5 +1,5 @@
 OUTPUT_DIR=./js
-DEFAULT_EXPORTS:='_malloc','_free'
+DEFAULT_EXPORTS:='_malloc','_free','_WebAvcGetVersion'
 
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
@@ -14,8 +14,9 @@ LIBX264_DIR=./x264
 LIBX264_OBJ=$(LIBX264_DIR)/libx264.a
 LIBX264_EXPORTS:='_x264_encoder_encode'
 
+#-s INITIAL_MEMORY=2146435072 ?
+
 EMCC_OPTS=-O3 --closure 1 --memory-init-file 0 \
-	-s USE_PTHREADS=1 -s INITIAL_MEMORY=2146435072 \
 	-s EXPORTED_RUNTIME_METHODS="[cwrap, ccall]" \
 	-s FILESYSTEM=0 -s MODULARIZE=1 -s EXPORT_NAME=webavc \
 	-s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS),$(LIBX264_EXPORTS)]"
@@ -43,11 +44,11 @@ $(LIBSPEEXDSP_OBJ): $(LIBSPEEXDSP_DIR)/autogen.sh
 	cd $(LIBSPEEXDSP_DIR); emmake make
 
 $(LIBX264_OBJ): $(LIBX264_DIR)/configure
-	cd $(LIBX264_DIR); emconfigure ./configure --host=i686-gnu --enable-static --disable-cli --disable-asm --bit-depth=8 --extra-cflags=-pthread
+	cd $(LIBX264_DIR); emconfigure ./configure --host=i686-gnu --enable-static --disable-cli --disable-asm --bit-depth=8 --disable-thread --enable-pic
 	cd $(LIBX264_DIR); emmake make
 
 $(WEBASM): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
-	emcc -o $@ -g3 $(EMCC_OPTS) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+	emcc -o $@ -g3 $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
 
 $(WEBASM_MIN): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
-	emcc -o $@ $(EMCC_OPTS) $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+	emcc -o $@ $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)

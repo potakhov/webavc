@@ -1,9 +1,12 @@
 [submodule "opus"]
 	path = opus
 	url = https://github.com/xiph/opus.git
+	ignore = dirty
 [submodule "speexdsp"]
 	path = speexdsp
 	url = https://github.com/xiph/speexdsp.git
+	ignore = dirty
 [submodule "x264"]
 	path = x264
 	url = https://code.videolan.org/videolan/x264.git
+	ignore = dirty

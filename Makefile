@@ -1,5 +1,5 @@
 OUTPUT_DIR=./js
-DEFAULT_EXPORTS:='_malloc','_free','_WebAvcGetVersion'
+DEFAULT_EXPORTS:='_malloc','_free','_WebAvcGetVersion', '_WebAvcCreateX264Encoder', '_WebAvcDestroyX264Encoder'
 
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a
@@ -16,8 +16,8 @@ LIBX264_EXPORTS:='_x264_encoder_encode'
 
 #-s INITIAL_MEMORY=2146435072 ?
 
-EMCC_OPTS=-O3 --closure 1 --memory-init-file 0 \
-	-s EXPORTED_RUNTIME_METHODS="[cwrap, ccall]" \
+EMCC_OPTS=-O3 \
+	-s EXPORTED_RUNTIME_METHODS="[cwrap, getValue, setValue]" \
 	-s FILESYSTEM=0 -s MODULARIZE=1 -s EXPORT_NAME=webavc \
 	-s EXPORTED_FUNCTIONS="[$(DEFAULT_EXPORTS),$(LIBOPUS_DECODER_EXPORTS),$(LIBOPUS_ENCODER_EXPORTS),$(LIBSPEEXDSP_EXPORTS),$(LIBX264_EXPORTS)]"
 
@@ -28,7 +28,6 @@ default: $(WEBASM) $(WEBASM_MIN)
 
 clean:
 	rm -rf $(OUTPUT_DIR) $(LIBOPUS_DIR) $(LIBSPEEXDSP_DIR) $(LIBX264_DIR)
-	mkdir $(OUTPUT_DIR)
 
 $(LIBOPUS_DIR)/autogen.sh $(LIBSPEEXDSP_DIR)/autogen.sh $(LIBX264_DIR)/configure:
 	git submodule update --init
@@ -48,7 +47,9 @@ $(LIBX264_OBJ): $(LIBX264_DIR)/configure
 	cd $(LIBX264_DIR); emmake make
 
 $(WEBASM): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+	mkdir -p $(OUTPUT_DIR)
 	emcc -o $@ -g3 $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
 
 $(WEBASM_MIN): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
-	emcc -o $@ $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+	mkdir -p $(OUTPUT_DIR)
+	emcc -o $@ --closure 1 $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)

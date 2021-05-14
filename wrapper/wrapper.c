@@ -19,7 +19,8 @@ int WebAvcGetVersion() {
 }
 
 void fill_x264_param(x264_param_t* param, int width, int height, int framerate, int bitrate, int iframe_interval, int bframe_interval) {
-    if (x264_param_default_preset(param, "veryfast", "fastdecode,zerolatency") != 0)
+    //if (x264_param_default_preset(param, "veryfast", "fastdecode,zerolatency") != 0)
+    if (x264_param_default_preset(param, "ultrafast", "fastdecode,zerolatency") != 0)
         return;
 
     param->i_width = width;
@@ -126,7 +127,7 @@ int WebAvcCreateX264Encoder(int width, int height, int framerate, int bitrate, i
     enc_ptr = x264_encoder_open(&param);
 
     if (enc_ptr != 0) {
-		return 1;
+		return iframe_interval;
 	}
 
     return 0;
@@ -137,8 +138,8 @@ int WebAvcEncodeX264(const unsigned char* pic_buf, unsigned char* enc_buf, int* 
         return 0;
 
 	pic_in.img.plane[0] = (uint8_t*)(pic_buf);
-	pic_in.img.plane[1] = (uint8_t*)(pic_buf + (w * h));
-	pic_in.img.plane[2] = (uint8_t*)(pic_buf + (w * h) + (w * h / 4));
+	pic_in.img.plane[2] = (uint8_t*)(pic_buf + (w * h));
+	pic_in.img.plane[1] = (uint8_t*)(pic_buf + (w * h) + (w * h / 4));
 
 	return encodePicIn(enc_buf, enc_type);
 }

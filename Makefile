@@ -13,7 +13,49 @@ LIBSPEEXDSP_EXPORTS:='_speex_resampler_init','_speex_resampler_process_interleav
 LIBX264_DIR=./x264
 LIBX264_OBJ=$(LIBX264_DIR)/libx264.a
 
-#-s INITIAL_MEMORY=2146435072 ?
+COMMON_FILTERS = scale crop overlay
+COMMON_DECODERS = h264
+
+LIBFFMPEG_DIR=./ffmpeg
+LIBFFMPEG_OBJ=$(LIBFFMPEG_DIR)/ffmpeg.bc
+FFMPEG_COMMON_ARGS = \
+	--cc=emcc \
+	--ranlib=emranlib \
+	--enable-cross-compile \
+	--target-os=none \
+	--arch=x86 \
+	--disable-runtime-cpudetect \
+	--disable-asm \
+	--disable-fast-unaligned \
+	--disable-pthreads \
+	--disable-w32threads \
+	--disable-os2threads \
+	--disable-debug \
+	--disable-stripping \
+	--disable-safe-bitstream-reader \
+	--disable-all \
+	--enable-ffmpeg \
+	--enable-avcodec \
+	--enable-avformat \
+	--enable-avfilter \
+	--enable-swresample \
+	--enable-swscale \
+	--disable-network \
+	--disable-d3d11va \
+	--disable-dxva2 \
+	--disable-vaapi \
+	--disable-vdpau \
+	$(addprefix --enable-decoder=,$(COMMON_DECODERS)) \
+	--enable-protocol=file \
+	$(addprefix --enable-filter=,$(COMMON_FILTERS)) \
+	--disable-bzlib \
+	--disable-iconv \
+	--disable-libxcb \
+	--disable-lzma \
+	--disable-sdl2 \
+	--disable-securetransport \
+	--disable-xlib \
+	--disable-zlib
 
 EMCC_OPTS=-O3 \
 	-s EXPORTED_RUNTIME_METHODS="[cwrap, getValue, setValue]" \
@@ -45,10 +87,18 @@ $(LIBX264_OBJ): $(LIBX264_DIR)/configure
 	cd $(LIBX264_DIR); emconfigure ./configure --host=i686-gnu --enable-static --disable-cli --disable-asm --bit-depth=8 --disable-thread --enable-pic
 	cd $(LIBX264_DIR); emmake make
 
-$(WEBASM): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+$(LIBFFMPEG_OBJ): $(LIBFFMPEG_DIR)/configure
+	cd $(LIBFFMPEG_DIR) && \
+	emconfigure ./configure \
+		$(FFMPEG_COMMON_ARGS) \
+		&& \
+	emmake make -j && \
+	cp ffmpeg ffmpeg.bc
+
+$(WEBASM): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ) $(LIBFFMPEG_OBJ)
 	mkdir -p $(OUTPUT_DIR)
 	emcc -o $@ -g3 $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
 
-$(WEBASM_MIN): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)
+$(WEBASM_MIN): $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ) $(LIBFFMPEG_OBJ)
 	mkdir -p $(OUTPUT_DIR)
 	emcc -o $@ --closure 1 $(EMCC_OPTS) wrapper/wrapper.c $(LIBOPUS_OBJ) $(LIBSPEEXDSP_OBJ) $(LIBX264_OBJ)

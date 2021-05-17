@@ -10,3 +10,7 @@
 	path = x264
 	url = https://code.videolan.org/videolan/x264.git
 	ignore = dirty
+[submodule "ffmpeg"]
+	path = ffmpeg
+	url = https://git.ffmpeg.org/ffmpeg.git
+	ignore = dirty

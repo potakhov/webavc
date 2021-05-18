@@ -14,10 +14,6 @@ x264_picture_t pic_out;
 int w = 0;
 int h = 0;
 
-int WebAvcGetVersion() {
-    return 1;
-}
-
 void fill_x264_param(x264_param_t* param, int width, int height, int framerate, int bitrate, int iframe_interval, int bframe_interval) {
     //if (x264_param_default_preset(param, "veryfast", "fastdecode,zerolatency") != 0)
     if (x264_param_default_preset(param, "ultrafast", "fastdecode,zerolatency") != 0)

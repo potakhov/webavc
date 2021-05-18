@@ -1,5 +1,7 @@
 OUTPUT_DIR=./js
-DEFAULT_EXPORTS:='_malloc','_free','_WebAvcCreateX264Encoder', '_WebAvcDestroyX264Encoder', '_WebAvcEncodeX264', '_WebAvcCreateH264Decoder'
+DEFAULT_EXPORTS:='_malloc','_free', \
+				'_WebAvcCreateX264Encoder', '_WebAvcDestroyX264Encoder', '_WebAvcEncodeX264', \
+				'_WebAvcCreateH264Decoder', '_WebAvcDestroyH264Decoder', '_WebAvcH264DecodeToResolution', '_WebAvcH264GetFrameResolution'
 
 LIBOPUS_DIR=./opus
 LIBOPUS_OBJ=$(LIBOPUS_DIR)/.libs/libopus.a

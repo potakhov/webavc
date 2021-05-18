@@ -1,12 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "../x264/x264.h"
-
-#define AVC_FRAME_UNKNOWN	255
-#define AVC_FRAME_I			0
-#define AVC_FRAME_P			1
-#define AVC_FRAME_B			2
-#define AVC_FRAME_SI		3
+#include "wrappers.h"
 
 x264_t* enc_ptr = 0;
 x264_picture_t pic_in;
